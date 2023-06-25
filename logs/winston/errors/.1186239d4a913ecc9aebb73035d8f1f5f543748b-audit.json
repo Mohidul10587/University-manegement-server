@@ -139,6 +139,21 @@
             "date": 1687719665185,
             "name": "/home/mohid/Desktop/Next level web developer course/University-Management/logs/winston/errors/phu-2023-26-06-01-error.log",
             "hash": "45419e7df6a4aef7fd78588954e6d79ac44c41038be74a140ff2d2b5a3bc3259"
+        },
+        {
+            "date": 1687724947280,
+            "name": "/home/mohid/Desktop/Next level web developer course/University-Management/logs/winston/errors/phu-2023-26-06-02-error.log",
+            "hash": "4200e83af6c18efc257d1127df30c718747cd358dcfb27bb441ad0d7b7993ff4"
+        },
+        {
+            "date": 1687726814154,
+            "name": "/home/mohid/Desktop/Next level web developer course/University-Management/logs/winston/errors/phu-2023-26-06-03-error.log",
+            "hash": "e82e89e9033c803dbd565ed6fbb71c98859a43729b1203f066d24412b7e8c187"
+        },
+        {
+            "date": 1687730412837,
+            "name": "/home/mohid/Desktop/Next level web developer course/University-Management/logs/winston/errors/phu-2023-26-06-04-error.log",
+            "hash": "a81789aadefb8c454e741e6f21b86f84d2ccaf16c2093236c09febb43ac90103"
         }
     ],
     "hashType": "sha256"
