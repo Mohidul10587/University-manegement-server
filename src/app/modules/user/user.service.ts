@@ -1,4 +1,4 @@
-import { startSession } from 'mongoose';
+import mongoose from 'mongoose';
 import config from '../../../config';
 import { IAcademicSemester } from '../academicSemester/academicSemester.interface';
 import { AcademicSemester } from '../academicSemester/academicSemester.model';
@@ -10,11 +10,16 @@ import { ApiError } from '../../../error/ApiError';
 import httpStatus from 'http-status';
 import { Student } from '../student/student.model';
 
+const getAllUsers = async () => {
+  const result = await User.find({});
+  return result;
+};
+
 const createStudent = async (
   student: IStudent,
   user: IUser
 ): Promise<IUser | null> => {
-  // default password
+  // If password is not given,set default password
   if (!user.password) {
     user.password = config.default_student_pass as string;
   }
@@ -24,10 +29,9 @@ const createStudent = async (
   const academicSemester = await AcademicSemester.findById(
     student.academicSemester
   ).lean();
-  let newUserAllData = null;
-  // generate student id
 
-  const session = await startSession();
+  let newUserAllData = null;
+  const session = await mongoose.startSession();
   try {
     session.startTransaction();
     // generate student id
@@ -36,7 +40,7 @@ const createStudent = async (
     user.id = id;
     student.id = id;
 
-    // Create student using sesssin
+    // Create student using session
     const newStudent = await Student.create([student], { session });
 
     if (!newStudent.length) {
@@ -81,4 +85,4 @@ const createStudent = async (
   return newUserAllData;
 };
 
-export const UserService = { createStudent };
+export const UserService = { createStudent, getAllUsers };

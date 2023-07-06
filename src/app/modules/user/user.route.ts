@@ -5,11 +5,7 @@ import validateRequest from '../../middleware/validateRequest';
 
 const router = express.Router();
 
-// router.post(
-//   '/create-user',
-//   validateRequest(UserValidation.createUserZodSchema),
-//   UserController.createUser
-// )
+router.get('/', UserController.getUsers);
 router.post(
   '/create-student',
   validateRequest(UserValidation.createStudentZodSchema),
