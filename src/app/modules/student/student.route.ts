@@ -1,10 +1,8 @@
 import express from 'express';
 import { StudentController } from './student.controller';
-// import { ENUM_USER_ROLE } from '../../../enums/user';
-// import auth from '../../middlewares/auth';
-// import validateRequest from '../../middlewares/validateRequest';
+import { StudentValidation } from './student.validation';
+import validateRequest from '../../middleware/validateRequest';
 
-// import { StudentValidaion } from './student.validation';
 const router = express.Router();
 
 router.get(
@@ -26,7 +24,7 @@ router.delete(
 
 router.patch(
   '/:id',
-  //   validateRequest(StudentValidaion.updateStudentZodSchema),
+  validateRequest(StudentValidation.updateStudentZodSchema),
   //   auth(ENUM_USER_ROLE.SUPER_ADMIN, ENUM_USER_ROLE.ADMIN),
   StudentController.updateStudent
 );

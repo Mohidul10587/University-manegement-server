@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import catchAsync from '../../../shared/catchAsync';
 import sendResponse from '../../../shared/sendResponse';
 import httpStatus from 'http-status';
+import { IUser } from './user.interface';
 
 const getUsers = async (req: Request, res: Response) => {
   const result = await UserService.getAllUsers();
@@ -21,7 +22,7 @@ const createStudent: RequestHandler = catchAsync(
 
     const result = await UserService.createStudent(student, userData);
 
-    sendResponse(res, {
+    sendResponse<IUser>(res, {
       statusCode: httpStatus.OK,
       success: true,
       message: 'Successfully create user',
@@ -30,4 +31,18 @@ const createStudent: RequestHandler = catchAsync(
   }
 );
 
-export const UserController = { createStudent, getUsers };
+const createFaculty: RequestHandler = catchAsync(
+  async (req: Request, res: Response) => {
+    const { faculty, ...userData } = req.body;
+    const result = await UserService.createFaculty(faculty, userData);
+
+    sendResponse<IUser>(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Faculty created successfully!',
+      data: result,
+    });
+  }
+);
+
+export const UserController = { createStudent, createFaculty, getUsers };
