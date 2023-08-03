@@ -5,12 +5,11 @@ import { IGenericResponse } from '../../../interfaces/common';
 import { IPaginationOptions } from '../../../interfaces/pagination';
 
 import httpStatus from 'http-status';
-
+import ApiError from '../../../errors/ApiError';
 import { User } from '../user/user.model';
 import { studentSearchableFields } from './student.constant';
 import { IStudent, IStudentFilters } from './student.interface';
 import { Student } from './student.model';
-import { ApiError } from '../../../error/ApiError';
 
 const getAllStudents = async (
   filters: IStudentFilters,
@@ -33,7 +32,7 @@ const getAllStudents = async (
       })),
     });
   }
-  // Filters needs $and to full fill all the conditions
+  // Filters needs $and to fullfill all the conditions
   if (Object.keys(filtersData).length) {
     andConditions.push({
       $and: Object.entries(filtersData).map(([field, value]) => ({
@@ -94,22 +93,22 @@ const updateStudent = async (
 
   if (name && Object.keys(name).length > 0) {
     Object.keys(name).forEach(key => {
-      const nameKey = `name.${key}` as keyof Partial<IStudent>; // `name.firstName`
+      const nameKey = `name.${key}` as keyof Partial<IStudent>; // `name.fisrtName`
       (updatedStudentData as any)[nameKey] = name[key as keyof typeof name];
     });
   }
   if (guardian && Object.keys(guardian).length > 0) {
     Object.keys(guardian).forEach(key => {
-      const guardianKey = `guardian.${key}` as keyof Partial<IStudent>; // `guardian.firstGuardian`
+      const guardianKey = `guardian.${key}` as keyof Partial<IStudent>; // `guardian.fisrtguardian`
       (updatedStudentData as any)[guardianKey] =
         guardian[key as keyof typeof guardian];
     });
   }
   if (localGuardian && Object.keys(localGuardian).length > 0) {
     Object.keys(localGuardian).forEach(key => {
-      const localGuardianKey =
-        `localGuardian.${key}` as keyof Partial<IStudent>; // `localGuardian.firstName`
-      (updatedStudentData as any)[localGuardianKey] =
+      const localGuradianKey =
+        `localGuardian.${key}` as keyof Partial<IStudent>; // `localGuardian.fisrtName`
+      (updatedStudentData as any)[localGuradianKey] =
         localGuardian[key as keyof typeof localGuardian];
     });
   }

@@ -1,76 +1,141 @@
-// import { IFaculty } from './faculty.interface';
-// import { IUser } from '../user/user.interface';
-// import config from '../../../config';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-dgetAllFacultiesisable @typescript-eslint/no-explicit-any */
+import mongoose, { SortOrder } from 'mongoose';
+import { paginationHelpers } from '../../../helpers/paginationHelper';
+import { IGenericResponse } from '../../../interfaces/common';
+import { IPaginationOptions } from '../../../interfaces/pagination';
 
-// const createFaculty = async (
-//   faculty: IFaculty,
-//   user: IUser
-// ): Promise<IUser | null> => {
-//   // If password is not given,set default password
-//   if (!user.password) {
-//     user.password = config.default_student_pass as string;
-//   }
-//   // set role
-//   user.role = 'student';
+import httpStatus from 'http-status';
+import ApiError from '../../../errors/ApiError';
+import { User } from '../user/user.model';
+import { facultySearchableFields } from './faculty.constant';
+import { IFaculty, IFacultyFilters } from './faculty.interface';
+import { Faculty } from './faculty.model';
 
-//   //   const academicSemester = await AcademicSemester.findById(
-//   //     student.academicSemester
-//   //   ).lean();
+const getSingleFaculty = async (id: string): Promise<IFaculty | null> => {
+  const result = await Faculty.findOne({ id })
+    .populate('academicDepartment')
+    .populate('academicFaculty');
 
-//   //   let newUserAllData = null;
-//   //   const session = await mongoose.startSession();
-//   //   try {
-//   //     session.startTransaction();
-//   //     // generate student id
-//   //     const id = await generateStudentId(academicSemester as IAcademicSemester);
-//   //     // set custom id into both  student & user
-//   //     user.id = id;
-//   //     student.id = id;
+  return result;
+};
 
-//   //     // Create student using session
-//   //     const newStudent = await Student.create([student], { session });
+const getAllFaculties = async (
+  filters: IFacultyFilters,
+  paginationOptions: IPaginationOptions
+): Promise<IGenericResponse<IFaculty[]>> => {
+  // Extract searchTerm to implement search query
+  const { searchTerm, ...filtersData } = filters;
+  const { page, limit, skip, sortBy, sortOrder } =
+    paginationHelpers.calculatePagination(paginationOptions);
 
-//   //     if (!newStudent.length) {
-//   //       throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create student');
-//   //     }
+  const andConditions = [];
 
-//   //     // set student _id (reference) into user.student
-//   //     user.student = newStudent[0]._id;
+  // Search needs $or for searching in specified fields
+  if (searchTerm) {
+    andConditions.push({
+      $or: facultySearchableFields.map(field => ({
+        [field]: {
+          $regex: searchTerm,
+          $options: 'i',
+        },
+      })),
+    });
+  }
+  // Filters needs $and to fullfill all the conditions
+  if (Object.keys(filtersData).length) {
+    andConditions.push({
+      $and: Object.entries(filtersData).map(([field, value]) => ({
+        [field]: value,
+      })),
+    });
+  }
 
-//   //     const newUser = await User.create([user], { session });
+  // Dynamic  Sort needs  field to  do sorting
+  const sortConditions: { [key: string]: SortOrder } = {};
+  if (sortBy && sortOrder) {
+    sortConditions[sortBy] = sortOrder;
+  }
+  const whereConditions =
+    andConditions.length > 0 ? { $and: andConditions } : {};
 
-//   //     if (!newUser.length) {
-//   //       throw new ApiError(httpStatus.BAD_REQUEST, 'Failed to create user');
-//   //     }
-//   //     newUserAllData = newUser[0];
+  const result = await Faculty.find(whereConditions)
+    .populate('academicDepartment')
+    .populate('academicFaculty')
+    .sort(sortConditions)
+    .skip(skip)
+    .limit(limit);
 
-//   //     await session.commitTransaction();
-//   //     await session.endSession();
-//   //   } catch (error) {
-//   //     await session.abortTransaction();
-//   //     await session.endSession();
-//   //     throw error;
-//   //   }
+  const total = await Faculty.countDocuments(whereConditions);
 
-//   //   if (newUserAllData) {
-//   //     newUserAllData = await User.findOne({ id: newUserAllData.id }).populate({
-//   //       path: 'student',
-//   //       populate: [
-//   //         {
-//   //           path: 'academicSemester',
-//   //         },
-//   //         {
-//   //           path: 'academicDepartment',
-//   //         },
-//   //         {
-//   //           path: 'academicFaculty',
-//   //         },
-//   //       ],
-//   //     });
-//   //   }
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+    },
+    data: result,
+  };
+};
 
-//   //   return newUserAllData;
-//   return null;
-// };
+const updateFaculty = async (
+  id: string,
+  payload: Partial<IFaculty>
+): Promise<IFaculty | null> => {
+  const isExist = await Faculty.findOne({ id });
 
-// export const FacultyService = { createFaculty };
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Faculty not found !');
+  }
+
+  const { name, ...FacultyData } = payload;
+  const updatedFacultyData: Partial<IFaculty> = { ...FacultyData };
+
+  if (name && Object.keys(name).length > 0) {
+    Object.keys(name).forEach(key => {
+      const nameKey = `name.${key}` as keyof Partial<IFaculty>;
+      (updatedFacultyData as any)[nameKey] = name[key as keyof typeof name];
+    });
+  }
+
+  const result = await Faculty.findOneAndUpdate({ id }, updatedFacultyData, {
+    new: true,
+  });
+  return result;
+};
+
+const deleteFaculty = async (id: string): Promise<IFaculty | null> => {
+  // check if the faculty is exist
+  const isExist = await Faculty.findOne({ id });
+
+  if (!isExist) {
+    throw new ApiError(httpStatus.NOT_FOUND, 'Faculty not found !');
+  }
+
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+    //delete faculty first
+    const faculty = await Faculty.findOneAndDelete({ id }, { session });
+    if (!faculty) {
+      throw new ApiError(404, 'Failed to delete student');
+    }
+    //delete user
+    await User.deleteOne({ id });
+    session.commitTransaction();
+    session.endSession();
+
+    return faculty;
+  } catch (error) {
+    session.abortTransaction();
+    throw error;
+  }
+};
+
+export const FacultyService = {
+  getSingleFaculty,
+  getAllFaculties,
+  updateFaculty,
+  deleteFaculty,
+};

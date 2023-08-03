@@ -1,0 +1,2 @@
+Thu Aug 03 2023 11:2:25 } [PH] error: Failed to connect database The `uri` parameter to `openUri()` must be a string, got "undefined". Make sure the first parameter to `mongoose.connect()` or `mongoose.createConnection()` is a string.
+Thu Aug 03 2023 11:5:40 } [PH] error: Failed to connect database queryTxt ETIMEOUT cluster0.ndnk1mu.mongodb.net
